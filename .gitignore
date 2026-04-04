@@ -1,0 +1,10 @@
+# Model files (too large for GitHub)
+*.pt
+*.pth
+
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
