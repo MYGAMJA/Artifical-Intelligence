@@ -62,6 +62,65 @@ Assignment 3/
 
 ---
 
+## 2-1. `# Modify this section` 섹션 — 파라미터 설정 방법
+
+`TODO`(코드 구현)와 다르게, **값(파라미터)만 바꿔서 실험하는 부분**입니다.
+
+### Cell 15 — 학습할 컨셉 설정 (학습 시작 전 1회 결정)
+
+```python
+images_path = "cat2"          # reference_images/ 안의 폴더명
+placeholder_token = "<cat2>"  # 새로 만들 토큰 이름 (꺾쇠로 감싸야 단일 토큰 보장)
+initializer_token = "cat"     # placeholder 임베딩의 초기값으로 쓸 일반 영단어
+what_to_teach = "object"      # object 또는 style
+```
+
+**선택 가능한 컨셉 목록과 추천 initializer_token:**
+
+| `images_path` | `placeholder_token` | `initializer_token` |
+| --- | --- | --- |
+| `cat2` | `<cat2>` | `cat` |
+| `monster_toy` | `<monster>` | `toy` |
+| `teapot` | `<teapot>` | `teapot` |
+| `backpack_dog` | `<backpack_dog>` | `dog` |
+| `robot_toy` | `<robot>` | `robot` |
+| `poop_emoji` | `<poop>` | `emoji` |
+| `berry_bowl` | `<bowl>` | `bowl` |
+| `clock` | `<clock>` | `clock` |
+| `grey_sloth_plushie` | `<sloth>` | `sloth` |
+| `rc_car` | `<car>` | `car` |
+
+> **주의**: 컨셉을 바꾸면 학습을 처음부터 다시 해야 합니다. 처음에는 `cat2`로 그대로 진행해도 됩니다.
+
+### Cell 30 / Cell 31 — 추론 파라미터 (학습 완료 후 반복 실험)
+
+```python
+learned_embeds_step = 1000   # 어떤 step에서 저장된 임베딩을 쓸지 (save_steps 배수 중 선택)
+prompt = "..."               # 생성할 이미지의 텍스트 프롬프트
+num_samples = 5              # 한 번에 생성할 이미지 수 (Cell 30만 해당)
+```
+
+**Problem 2 실험을 위한 권장 prompt 변형 예시** (컨셉이 `<cat2>`인 경우):
+
+| 실험 목적 | prompt |
+| --- | --- |
+| 학습 전 baseline | `"a photo of a cat"` |
+| 학습 후 기본 확인 | `"a photo of a <cat2>"` |
+| 스타일 변환 | `"oil painting of a <cat2>"` |
+| 장면 변경 | `"a <cat2> on the beach"` |
+| 객체 합성 | `"a <cat2> and a dog"` |
+| 배경 변경 | `"a <cat2> in the jungle"` |
+
+**step별 비교 실험** (`learned_embeds_step` 변경):
+
+```python
+learned_embeds_step = 100   # 초기 학습 상태 (under-trained)
+learned_embeds_step = 500   # 중간
+learned_embeds_step = 1000  # 최종 (기본값)
+```
+
+---
+
 ## 3. 문제별 상세 분해
 
 ### Problem 1 — Learning the New Token (구현)
