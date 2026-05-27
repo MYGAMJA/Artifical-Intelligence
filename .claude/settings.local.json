@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(python -c ' *)",
-      "Bash(python3)"
+      "Bash(python3)",
+      "Bash(git checkout *)",
+      "Bash(git commit -m 'restore files for LFS migration *)"
     ]
   }
 }
