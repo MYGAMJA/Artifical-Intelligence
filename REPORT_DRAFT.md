@@ -129,71 +129,30 @@ The learned `<cat2>` token can guide Stable Diffusion to generate the personaliz
 
 ### 1. Additional Experiment Code
 
-![Problem 3 experiment code](report_images/problem3_experiment_code.png)
-
-For Problem 3, I designed additional experiments to check when Textual Inversion succeeds and when it fails. I used the saved training runs in the workspace:
-
-| Folder | Learning rate label |
-| --- | --- |
-| `sd-concept-output_1` | `lr0.002` |
-| `sd-concept-output_2` | `lr0.0004` |
-| `sd-concept-output_3` | `lr0.004` |
-
-The experiments compare three factors: training step, learning rate, and prompt difficulty. The code saves generated images and computes CLIP-I and CLIP-T for each condition.
-
-### 2. Step Comparison
-
-![Problem 3 step comparison results](report_images/problem3_step_results.png)
-
-I compared checkpoints from step 200, 500, and 1000 using the same prompt. This experiment shows how the learned embedding changes during training.
-
-Early checkpoints are expected to behave closer to the generic initializer token `cat`, so they may produce a normal cat but not the specific target identity. Later checkpoints should better capture the reference concept. However, too much training can also reduce flexibility if the embedding overfits to the reference images.
-
-| Step | Prompt | CLIP-I | CLIP-T | Observation |
-| ---: | --- | ---: | ---: | --- |
-| 200 | `a photo of a <cat2> in the desert` |  |  |  |
-| 500 | `a photo of a <cat2> in the desert` |  |  |  |
-| 1000 | `a photo of a <cat2> in the desert` |  |  |  |
-
-### 3. Learning Rate Comparison
-
-![Problem 3 learning rate results](report_images/problem3_lr_results.png)
-
-I compared the final checkpoint from three learning-rate runs. A smaller learning rate should train more slowly but may be more stable. A larger learning rate can make the embedding change quickly, but it may also distort the concept or reduce prompt controllability.
-
-This experiment helps show that Textual Inversion is sensitive to training hyperparameters even though only one token embedding is being optimized.
-
-| Run | Prompt | CLIP-I | CLIP-T | Observation |
-| --- | --- | ---: | ---: | --- |
-| `lr0.0004` | `a photo of a <cat2> in the desert` |  |  |  |
-| `lr0.002` | `a photo of a <cat2> in the desert` |  |  |  |
-| `lr0.004` | `a photo of a <cat2> in the desert` |  |  |  |
-
-### 4. Prompt Robustness
-
-![Problem 3 prompt comparison results](report_images/problem3_prompt_results.png)
-
-I tested the same learned embedding with prompts of different difficulty:
-
-| Prompt type | Prompt |
-| --- | --- |
-| Simple scene | `a photo of a <cat2> in the desert` |
-| New background | `a photo of a <cat2> on a cobblestone street` |
-| Style change | `an oil painting of a <cat2>` |
-| Hard composition | `a <cat2> and a dog` |
-
-The model is expected to work better when the prompt contains a single object and a simple background. It may become less stable when the prompt asks for strong style transfer or interaction with another object. This suggests that one embedding vector has limited capacity for representing both detailed identity and flexible composition.
-
-### 5. Improvement Proposal
-
-Based on the experiments, I propose the following improvements:
-
-- Use more diverse reference images with different poses and backgrounds.
-- Apply moderate data augmentation such as random crop or horizontal flip.
-- Tune the learning rate carefully to avoid under-training or overfitting.
-- Use multiple learned tokens if one embedding is not enough to represent detailed identity.
-- Add regularization so that the learned embedding does not drift too far from the initializer token.
-
-### Problem 3 Summary
-
-The additional experiments show that Textual Inversion is efficient but sensitive to training settings. It performs well for simple object personalization, but it struggles when the prompt requires detailed identity preservation, strong style change, or complex object interaction. The main limitation is that only the token embedding is optimized, so the representation capacity is much smaller than methods that fine-tune more model parameters.
+실험 결과 정리
+실험 1: Step 수 비교 (lr=0.002 고정)
+Step	CLIP-I	CLIP-T
+200	0.7742	0.3063
+500	0.6673	0.3249
+1000	0.8569	0.2324
+Step이 늘수록 CLIP-I 증가 (원본 고양이와 더 닮아짐)
+반대로 CLIP-T 감소 (프롬프트 배경 반영이 줄어듦)
+Step 500이 CLIP-I가 가장 낮은 게 특이 → 학습 중간 불안정 구간
+실험 2: Learning Rate 비교 (step=1000 고정)
+LR	CLIP-I	CLIP-T
+0.0004 (낮음)	0.8530	0.2348
+0.002 (중간)	0.7768	0.3154
+0.004 (높음)	0.8385	0.2729
+낮은 LR → 고양이 특징 잘 포착 (CLIP-I↑), 프롬프트 반영 적음
+중간 LR → 프롬프트를 가장 잘 따름 (CLIP-T↑)
+Trade-off: 고양이 정체성 vs 배경 일반화
+실험 3: 프롬프트 다양성 (lr=0.002, step=1000 고정)
+프롬프트	CLIP-I	CLIP-T
+desert (익숙)	0.9054	0.2192
+cobblestone (익숙)	0.7850	0.3416
+oil painting (스타일)	0.7449	0.3211
+with a dog (복잡)	0.8205	0.2361
+oil painting에서 CLIP-I 가장 낮음 → 스타일 변환 시 원본과 달라짐
+cobblestone에서 CLIP-T 가장 높음 → 현실적인 배경일수록 잘 반영
+전체 결론
+핵심 trade-off: CLIP-I(원본 유사도)와 CLIP-T(프롬프트 반응)는 반비례 관계. 학습을 많이 할수록/LR이 낮을수록 고양이 특징은 강해지지만 프롬프트 다양성은 떨어집니다.
